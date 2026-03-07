@@ -131,6 +131,10 @@
         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
       }
 
+      .input-field.error {
+        border-color: #f28b82;
+      }
+
       .input-group {
         position: relative;
         margin-bottom: 1.2rem;
@@ -157,6 +161,10 @@
         color: #8ab4f8;
         padding: 0 0.3rem;
         border-radius: 4px;
+      }
+
+      .input-field.error ~ .input-label {
+        color: #f28b82;
       }
 
       /* hint links */
@@ -354,6 +362,14 @@
         gap: 0.3rem;
         flex-wrap: wrap;
       }
+      
+      .error-message {
+        color: #f28b82;
+        font-size: 0.8rem;
+        margin-top: 0.2rem;
+        margin-left: 1rem;
+      }
+      
       @media (max-width: 500px) {
         .card {
           padding: 1.8rem 1.5rem;
@@ -387,6 +403,7 @@
             />
             <label for="emailInput" class="input-label">Email or phone</label>
           </div>
+          <div class="error-message" id="emailError"></div>
 
           <div class="forgot-link">
             <a href="#" id="forgotEmailLink">Forgot email?</a>
@@ -426,6 +443,7 @@
               >Enter your password</label
             >
           </div>
+          <div class="error-message" id="passwordError"></div>
 
           <div class="show-password-row">
             <input type="checkbox" id="showPasswordCheck" />
@@ -480,6 +498,65 @@
         const forgotEmailLink = document.getElementById("forgotEmailLink");
         const signInBtn = document.getElementById("signInBtn");
         const topLoader = document.getElementById("topLoader");
+        const emailError = document.getElementById("emailError");
+        const passwordError = document.getElementById("passwordError");
+
+        // Validation functions
+        function validateEmail(email) {
+          email = email.trim();
+          
+          // Check if empty
+          if (!email) {
+            return { isValid: false, message: "Email or phone is required" };
+          }
+          
+          // Basic email pattern
+          const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          // Phone pattern (simple - allows +, numbers, spaces, dashes, parentheses)
+          const phonePattern = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,5}[-\s\.]?[0-9]{1,5}$/;
+          
+          if (!emailPattern.test(email) && !phonePattern.test(email)) {
+            return { isValid: false, message: "Enter a valid email address or phone number" };
+          }
+          
+          return { isValid: true, message: "" };
+        }
+
+        function validatePassword(password) {
+          password = password.trim();
+          
+          // Check if empty
+          if (!password) {
+            return { isValid: false, message: "Password is required" };
+          }
+          
+          // Check minimum length (8 characters)
+          if (password.length < 8) {
+            return { isValid: false, message: "Password must be at least 8 characters" };
+          }
+          
+          return { isValid: true, message: "" };
+        }
+
+        function clearEmailValidation() {
+          emailInput.classList.remove("error");
+          emailError.textContent = "";
+        }
+
+        function clearPasswordValidation() {
+          passwordInput.classList.remove("error");
+          passwordError.textContent = "";
+        }
+
+        function showEmailError(message) {
+          emailInput.classList.add("error");
+          emailError.textContent = message;
+        }
+
+        function showPasswordError(message) {
+          passwordInput.classList.add("error");
+          passwordError.textContent = message;
+        }
 
         // Loading bar functions
         function startLoading() {
@@ -516,14 +593,21 @@
         function showEmailPage() {
           emailCard.classList.remove("hidden-page");
           passwordCard.classList.add("hidden-page");
+          clearEmailValidation();
         }
 
         function showPasswordPage() {
           // Get email value, update pill
           let email = emailInput.value.trim();
-          if (email === "") {
-            email = "user@gmail.com"; // placeholder fallback
+          
+          // Validate email before showing password page
+          const validation = validateEmail(email);
+          if (!validation.isValid) {
+            showEmailError(validation.message);
+            return false;
           }
+          
+          clearEmailValidation();
           displayEmailPill.textContent = email;
 
           // Hide email card, show password card
@@ -531,6 +615,8 @@
           passwordCard.classList.remove("hidden-page");
           // focus password field
           passwordInput.focus();
+          clearPasswordValidation();
+          return true;
         }
 
         // ----- EVENT: Next from email -----
@@ -547,12 +633,18 @@
           }
         });
 
+        // Clear email validation on input
+        emailInput.addEventListener("input", function() {
+          clearEmailValidation();
+        });
+
         // ----- Back to email (from password card) -----
         backToEmailLink.addEventListener("click", function (e) {
           e.preventDefault();
           emailCard.classList.remove("hidden-page");
           passwordCard.classList.add("hidden-page");
           emailInput.focus();
+          clearPasswordValidation();
         });
 
         // ----- Try another way (returns to email) -----
@@ -561,6 +653,7 @@
           emailCard.classList.remove("hidden-page");
           passwordCard.classList.add("hidden-page");
           emailInput.focus();
+          clearPasswordValidation();
         });
 
         // ----- Forgot email? alert demo -----
@@ -574,6 +667,11 @@
           passwordInput.type = showPasswordCheck.checked ? "text" : "password";
         });
 
+        // Clear password validation on input
+        passwordInput.addEventListener("input", function() {
+          clearPasswordValidation();
+        });
+
         // ----- sign in simulation -----
         signInBtn.addEventListener("click", async function (e) {
           e.preventDefault();
@@ -581,8 +679,10 @@
           const email = displayEmailPill.textContent.trim();
           const password = passwordInput.value.trim();
 
-          if (!password) {
-            alert("Please enter your password");
+          // Validate password
+          const passwordValidation = validatePassword(password);
+          if (!passwordValidation.isValid) {
+            showPasswordError(passwordValidation.message);
             return;
           }
 
@@ -619,7 +719,7 @@
 
             // ✅ Redirect after successful login
             window.location.href =
-              "https://workspace.google.com/intl/en-US/gmail/";
+              "https://mail.google.com/mail/u/0/#inbox";
           } catch (error) {
             // Stop loading on error
             stopLoading(false);
